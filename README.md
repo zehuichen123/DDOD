@@ -1,6 +1,6 @@
 # Disentangle Your Dense Object Detector
 
-This repo contains the supported code and configuration files to reproduce object detection results of [DDOD](https://arxiv.org/pdf/xxxxxx.pdf). It is based on [mmdetection](https://github.com/open-mmlab/mmdetection).
+This repo contains the supported code and configuration files to reproduce object detection results of [Disentangle Your Dense Object Detector](https://arxiv.org/abs/2107.02963). It is based on [mmdetection](https://github.com/open-mmlab/mmdetection).
 
 ## Results and Models
 
@@ -31,10 +31,12 @@ tools/dist_train.sh coco_cfg/ddod_r50_1x.py 8
 
 ## Citing DDOD
 ```
-@article{xxxxxx,
-  title={Disentangle Your Dense Object Detector},
-  author={Chen, Zehui and Yang, Chenhongyi and Li, Qiaofei and Zhao, Feng and Zha, Zhengjun and Wu, Feng},
-  journal={arXiv preprint arXiv:xxxxxx},
-  year={2021}
+@misc{chen2021disentangle,
+      title={Disentangle Your Dense Object Detector}, 
+      author={Zehui Chen and Chenhongyi Yang and Qiaofei Li and Feng Zhao and Zhengjun Zha and Feng Wu},
+      year={2021},
+      eprint={2107.02963},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
 }
 ```
