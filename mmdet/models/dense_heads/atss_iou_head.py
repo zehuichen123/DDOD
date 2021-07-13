@@ -547,8 +547,7 @@ class ATSSIoUHead(AnchorHead):
              gt_labels_list,
              img_metas,
              label_channels=label_channels,
-             unmap_outputs=unmap_outputs,
-             atss_assign=atss_assign)
+             unmap_outputs=unmap_outputs)
         # no valid anchors
         if any([labels is None for labels in all_labels]):
             return None
