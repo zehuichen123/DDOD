@@ -47,7 +47,7 @@ class ATSSIoUHead(AnchorHead):
         self.sampling = False
         if self.train_cfg:
             self.assigner = build_assigner(self.train_cfg.assigner)
-            self.retina_assigner = build_assigner(self.train_cfg.retina_assigner)
+            # self.retina_assigner = build_assigner(self.train_cfg.retina_assigner)
             # SSD sampling=False so use PseudoSampler
             sampler_cfg = dict(type='PseudoSampler')
             self.sampler = build_sampler(sampler_cfg, context=self)
@@ -285,8 +285,7 @@ class ATSSIoUHead(AnchorHead):
             img_metas,
             gt_bboxes_ignore_list=gt_bboxes_ignore,
             gt_labels_list=gt_labels,
-            label_channels=label_channels,
-            atss_assign=True)
+            label_channels=label_channels)
         if atss_cls_reg_targets is None:
             return None
 
@@ -300,7 +299,7 @@ class ATSSIoUHead(AnchorHead):
                          device=device)).item()
         num_total_samples = max(num_total_samples, 1.0)
 
-        atss_losses_cls, atss_losses_bbox, atss_losses_iou = multi_apply(
+        losses_cls, losses_bbox, losses_iou = multi_apply(
                 self.loss_single,
                 anchor_list,
                 cls_scores,
@@ -312,58 +311,10 @@ class ATSSIoUHead(AnchorHead):
                 bbox_targets_list,
                 bbox_weights_list,
                 num_total_samples=num_total_samples)
-        
-        anchor_list, valid_flag_list = self.get_anchors(
-            featmap_sizes, img_metas, device=device)
-        retina_cls_reg_targets = self.get_targets(
-            anchor_list,
-            valid_flag_list,
-            gt_bboxes,
-            img_metas,
-            gt_bboxes_ignore_list=gt_bboxes_ignore,
-            gt_labels_list=gt_labels,
-            label_channels=label_channels,
-            atss_assign=False)
-        if retina_cls_reg_targets is None:
-            return None
-
-        (anchor_list, labels_list, label_weights_list, bbox_targets_list,
-         bbox_weights_list, num_total_pos, num_total_neg) = retina_cls_reg_targets
-        
-        retina_num_total_pos = num_total_pos
-
-        num_total_samples = reduce_mean(
-            torch.tensor(num_total_pos, dtype=torch.float,
-                         device=device)).item()
-        num_total_samples = max(num_total_samples, 1.0)
-        # NOTE DEBUG ONLY
-        pos_gt_nums = 0
-        for gt_bbox in gt_bboxes:
-            pos_gt_nums += gt_bbox.shape[0]
-        # print(atss_num_total_pos / pos_gt_nums, retina_num_total_pos / pos_gt_nums)
-
-        retina_losses_cls, retina_losses_bbox, retina_losses_iou = multi_apply(
-                self.loss_single,
-                anchor_list,
-                cls_scores,
-                bbox_preds,
-                iou_preds,
-                # centernesses,
-                labels_list,
-                label_weights_list,
-                bbox_targets_list,
-                bbox_weights_list,
-                num_total_samples=num_total_samples)
-
-        # bbox_avg_factor = sum(bbox_avg_factor)
-        # bbox_avg_factor = reduce_mean(bbox_avg_factor).item()
-        # if bbox_avg_factor < EPS:
-        #     bbox_avg_factor = 1
-        # losses_bbox = list(map(lambda x: x / bbox_avg_factor, losses_bbox))
         return dict(
-            loss_cls=atss_losses_cls,
-            loss_bbox=retina_losses_bbox,
-            loss_iou=atss_losses_iou)
+            loss_cls=losses_cls,
+            loss_bbox=losses_bbox,
+            loss_iou=losses_iou)
             # loss_centerness=loss_centerness)
 
     # def centerness_target(self, anchors, bbox_targets):
@@ -560,8 +511,7 @@ class ATSSIoUHead(AnchorHead):
                     gt_bboxes_ignore_list=None,
                     gt_labels_list=None,
                     label_channels=1,
-                    unmap_outputs=True,
-                    atss_assign=True):
+                    unmap_outputs=True):
         """Get targets for ATSS head.
 
         This method is almost the same as `AnchorHead.get_targets()`. Besides
@@ -575,22 +525,11 @@ class ATSSIoUHead(AnchorHead):
         num_level_anchors = [anchors.size(0) for anchors in anchor_list[0]]
         num_level_anchors_list = [num_level_anchors] * num_imgs
 
-        if atss_assign == False:
-            # concat all level anchors to a single tensor
-            concat_anchor_list = []
-            concat_valid_flag_list = []
-            for i in range(num_imgs):
-                assert len(anchor_list[i]) == len(valid_flag_list[i])
-                concat_anchor_list.append(torch.cat(anchor_list[i]))
-                concat_valid_flag_list.append(torch.cat(valid_flag_list[i]))
-            anchor_list = concat_anchor_list
-            valid_flag_list = concat_valid_flag_list
-        else:
-            # concat all level anchors and flags to a single tensor
-            for i in range(num_imgs):
-                assert len(anchor_list[i]) == len(valid_flag_list[i])
-                anchor_list[i] = torch.cat(anchor_list[i])
-                valid_flag_list[i] = torch.cat(valid_flag_list[i])
+        # concat all level anchors and flags to a single tensor
+        for i in range(num_imgs):
+            assert len(anchor_list[i]) == len(valid_flag_list[i])
+            anchor_list[i] = torch.cat(anchor_list[i])
+            valid_flag_list[i] = torch.cat(valid_flag_list[i])
 
         # compute targets for each image
         if gt_bboxes_ignore_list is None:
@@ -638,8 +577,7 @@ class ATSSIoUHead(AnchorHead):
                            gt_labels,
                            img_meta,
                            label_channels=1,
-                           unmap_outputs=True,
-                           atss_assign=True):
+                           unmap_outputs=True):
         """Compute regression, classification targets for anchors in a single
         image.
 
@@ -686,16 +624,9 @@ class ATSSIoUHead(AnchorHead):
 
         num_level_anchors_inside = self.get_num_level_anchors_inside(
             num_level_anchors, inside_flags)
-        if atss_assign:
-            assign_result = self.assigner.assign(anchors, num_level_anchors_inside,
-                                                gt_bboxes, gt_bboxes_ignore,
-                                                gt_labels)
-        else:
-            # assign_result = self.retina_assigner.assign(anchors, gt_bboxes, gt_bboxes_ignore,
-            #                                     None if self.sampling else gt_labels)
-            assign_result = self.retina_assigner.assign(anchors, num_level_anchors_inside,
-                                                gt_bboxes, gt_bboxes_ignore,
-                                                gt_labels)
+        assign_result = self.assigner.assign(anchors, num_level_anchors_inside,
+                                            gt_bboxes, gt_bboxes_ignore,
+                                            gt_labels)
 
         sampling_result = self.sampler.sample(assign_result, anchors,
                                               gt_bboxes)
