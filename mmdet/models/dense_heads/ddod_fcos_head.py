@@ -13,7 +13,7 @@ from mmdet.core.bbox import bbox_overlaps
 EPS = 1e-12
 
 @HEADS.register_module()
-class DDODHead(AnchorHead):
+class DDODFCOSHead(AnchorHead):
     """Bridging the Gap Between Anchor-based and Anchor-free Detection via
     Adaptive Training Sample Selection.
 
@@ -41,7 +41,7 @@ class DDODHead(AnchorHead):
         self.stacked_convs = stacked_convs
         self.conv_cfg = conv_cfg
         self.norm_cfg = norm_cfg
-        super(DDODHead, self).__init__(num_classes, in_channels, **kwargs)
+        super(DDODFCOSHead, self).__init__(num_classes, in_channels, **kwargs)
 
         self.sampling = False
         if self.train_cfg:

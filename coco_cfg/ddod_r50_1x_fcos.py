@@ -19,7 +19,7 @@ model = dict(
         add_extra_convs='on_output',
         num_outs=5),
     bbox_head=dict(
-        type='DDODHead',
+        type='DDODFCOSHead',
         num_classes=80,
         in_channels=256,
         stacked_convs=4,
@@ -36,7 +36,7 @@ model = dict(
         #     target_stds=[0.1, 0.1, 0.2, 0.2]),
         bbox_coder=dict(
             type='TBLRCenterCoder',
-            normalizer=1/8.,
+            normalizer=1/4.,
             normalize_by_wh=True
         ), 
         loss_cls=dict(

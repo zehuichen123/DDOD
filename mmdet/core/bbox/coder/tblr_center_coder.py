@@ -161,4 +161,3 @@ def tblr2bboxes(priors,
         boxes[:, 2].clamp_(min=0, max=max_shape[1])
         boxes[:, 3].clamp_(min=0, max=max_shape[0])
     return boxes
-{"mode":"full","isActive":false}
