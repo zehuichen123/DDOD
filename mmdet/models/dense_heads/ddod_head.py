@@ -103,7 +103,7 @@ class DDODHead(AnchorHead):
             normal_init(m.conv, std=0.01)
         bias_cls = bias_init_with_prob(0.01)
         normal_init(self.atss_cls, std=0.01, bias=bias_cls)
-        normal_init(self.atss_reg, mean=0.1, std=0.01)
+        normal_init(self.atss_reg, std=0.01)
         normal_init(self.atss_iou, std=0.01)
         # normal_init(self.atss_centerness, std=0.01)
 
