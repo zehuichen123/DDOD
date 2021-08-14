@@ -36,7 +36,7 @@ model = dict(
         #     target_stds=[0.1, 0.1, 0.2, 0.2]),
         bbox_coder=dict(
             type='TBLRCenterCoder',
-            normalizer=1/4.,
+            normalizer=1/8.,
             normalize_by_wh=True
         ), 
         loss_cls=dict(
@@ -110,7 +110,7 @@ data = dict(
         ann_file=data_root + 'annotations/instances_val2017.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline))
-evaluation = dict(interval=1, metric='bbox')
+evaluation = dict(interval=12, metric='bbox')
 # optimizer
 optimizer = dict(type='SGD', lr=0.02, momentum=0.9, weight_decay=0.0001)
 optimizer_config = dict(grad_clip=None)
