@@ -33,6 +33,7 @@ from .yolact_head import YOLACTHead, YOLACTProtonet, YOLACTSegmHead
 from .yolo_head import YOLOV3Head
 from .yolof_head import YOLOFHead
 from .ddod_head import DDODHead
+from .ddod_fcos_head import DDODFCOSHead
 from .atss_iou_head import ATSSIoUHead
 from .ddod_fcos_head import DDODFCOSHead
 

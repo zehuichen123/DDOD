@@ -8,6 +8,7 @@ This repo contains the supported code and configuration files to reproduce objec
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |:---: |
 | ATSS(IoU) | ResNet50 | 1x | 39.4 | 56.6 | 42.6 | 23.9 | 42.5 | 49.6 |
 | DDOD | ResNet50 | 1x | 41.6 | 59.9 | 45.2 | 23.9 | 44.9 | 54.4 |
+| DDOD-FCOS | ResNet50 | 1x | 41.6 | 59.9 | 45.3 | 24.0 | 44.6 | 54.8 |
 
 ## Usage
 
